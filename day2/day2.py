@@ -1,5 +1,5 @@
 #open the input file and strip the data into an workable array
-with open("testinput.txt","r") as file:
+with open("input.txt","r") as file:
     content = file.readlines()
 
 report_array = []
@@ -21,6 +21,27 @@ result = {
 
 n = len(report_array)
 for i in range(n):
-    for j in range(len(report_array[i])):
-        for k in range(report_array[i][j]):
-            
+    is_safe = True
+    gradually = None
+    for j in range(len(report_array[i]) - 1):
+        difference = report_array[i][j] - report_array[i][j + 1]
+        if 1 <= difference <= 3:
+            if gradually == "increasing":
+                is_safe = False
+                break
+            gradually = "decreasing"
+        elif -3 <= difference <= -1:
+            if gradually == "decreasing":
+                is_safe = False
+                break 
+            gradually = "increasing"
+        else:
+            is_safe = False
+            break
+    if is_safe:
+        result["safe"] += 1
+    else:
+        result["unsafe"] += 1
+
+print(result)
+    
