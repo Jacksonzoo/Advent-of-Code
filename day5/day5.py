@@ -24,21 +24,21 @@ print(f"Updates:", updates)
 
 total_pages = 0
 
-for before, after in rules:
-    for pages in updates:
-        correct_order = True
-        page = pages.split(",")
+
+for pages in updates:
+    correct_order = True
+    page = pages.split(",")
+
+    for before, after in rules:
         if before in page and after in page:
             before_index = page.index(before)
             after_index = page.index(after)
-            if before_index < after_index:
-                continue
-            else:
+            if before_index >= after_index:
                 correct_order = False
                 break
-            print(correct_order)
-        if correct_order:
-            middle_page = int(pages[len(pages) // 2])
-            total_pages += middle_page
+
+    if correct_order:
+        middle_page = int(page[len(page) // 2])
+        total_pages += middle_page
 
 print(total_pages)
