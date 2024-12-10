@@ -1,4 +1,5 @@
 # Open the input file and find a way to section the 'rules' and 'updates' so that we can differentiate the two
+
 with open("input.txt", "r") as file:
     rules_temp = []
     updates = []
@@ -72,4 +73,3 @@ for page in incorrect_updates:
 
 print(corrected_pages)
     
-
