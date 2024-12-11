@@ -1,50 +1,56 @@
-# Open and read the input file
-with open('input.txt', 'r') as file:
-    grid = [list(line.strip()) for line in file]
+# Start by opening the input file and splitting the lines to create your grid
+with open("testinput.txt", "r") as file:
+    lab_map = [list(line.strip()) for line in file]
 
-# Directions: up, right, down, left
-directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-direction_map = {'^': 0, '>': 1, 'v': 2, '<': 3}
 
-# Locate the guard's starting position and direction
-guard_position = None
-current_direction = None
-for r, row in enumerate(grid):
-    for c, cell in enumerate(row):
-        if cell in direction_map:
-            guard_position = (r, c)
-            current_direction = direction_map[cell]
-            grid[r][c] = '.'  # Replace the guard's symbol with an empty cell
+# Start by defining important information and adding a list of the necessary directions the guard can move
+# Find the guard in the grid and make note of its position
+# Create a while loop that will impose certain instructions depending on the position of the guard
+# If the guard reaches an obstacle "#", position the guard to make a 90 degree right turn and proceed
+# The guard leaves an "X" at every position it has been in, when the guard exits the grid, return the sum of "X"s
+
+facing = ["^", ">", "v", "<"]
+
+direction = {                    # (row, column)
+    "^" : (-1, 0),               # moving up (up, same)
+    ">" : (0, 1),                # moving right (same, right)
+    "v" : (1, 0),                # moving down (down, same)
+    "<" : (0, -1),               # moving left (same, left)
+}
+
+row = len(lab_map)
+col = len(lab_map[0])
+
+for i in range(row):
+    for j in range(col):
+        if lab_map[i][j] in facing:
+            guard = (i, j)
+            looking = lab_map[i][j]
             break
-    if guard_position:
-        break
 
-# Set to store visited positions
-visited = set()
-visited.add(guard_position)
+visited = set([guard])
 
-# Grid dimensions
-rows = len(grid)
-cols = len(grid[0])
-
-# Simulation loop
 while True:
-    # Calculate next position in the current direction
-    dr, dc = directions[current_direction]
-    next_r, next_c = guard_position[0] + dr, guard_position[1] + dc
+    nr, nc = direction[looking]
+    new_row, new_col = guard[0] + nr, guard[1] + nc
 
-    # Check if the next position is out of bounds
-    if next_r < 0 or next_r >= rows or next_c < 0 or next_c >= cols:
+    if not (0 <= new_row < row and 0 <= new_col < col):
         break
 
-    # Check the next cell
-    if grid[next_r][next_c] == '#':
-        # Turn right (change direction clockwise)
-        current_direction = (current_direction + 1) % 4
+    if lab_map[new_row][new_col] == "#":
+        current_index = facing.index(looking)
+        looking = facing[(current_index + 1) % 4]
     else:
-        # Move forward
-        guard_position = (next_r, next_c)
-        visited.add(guard_position)
+        guard = (new_row, new_col)
+        visited.add(guard)
 
-# Output the result
-print(f"Distinct positions visited: {len(visited)}")
+print(len(visited))
+
+
+# For Part 2, a new obstruction is introduced: "O"
+# This structure is to be strategically placed in order to cause the guard to be stuck in a loop
+# The structure cannot be placed at the starting position of the guard
+# Objective is to find all possible places the structure can be placed to achieve our goal
+# Return the total number of possible placements for the structure
+
+
