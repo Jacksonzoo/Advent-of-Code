@@ -1,5 +1,5 @@
 # Start by opening the input file and splitting the lines to create your grid
-with open("testinput.txt", "r") as file:
+with open("input.txt", "r") as file:
     lab_map = [list(line.strip()) for line in file]
 
 
@@ -28,6 +28,7 @@ for i in range(row):
             looking = lab_map[i][j]
             break
 
+guard_two = guard
 visited = set([guard])
 
 while True:
@@ -54,3 +55,37 @@ print(len(visited))
 # Return the total number of possible placements for the structure
 
 
+ro, co = guard_two
+possible_structure = 0
+
+for i in range(row):
+    for j in range(col):
+        if lab_map[i][j] != ".":
+            continue
+
+        lab_map[i][j] = "O"
+        been = set()
+        guardian = guard_two
+        looking = lab_map[ro][co]
+
+        while True:
+            nr, nc = direction[looking]
+            new_row, new_col = guardian[0] + nr, guardian[1] + nc
+
+            if (guardian[0], guardian[1], looking) in been:
+                possible_structure += 1
+                break
+            been.add((guardian[0], guardian[1], looking))
+
+            if not (0 <= new_row < row and 0 <= new_col < col):
+                break
+
+            if lab_map[new_row][new_col] in {"#", "O"}:
+                current_index = facing.index(looking)
+                looking = facing[(current_index + 1) % 4]
+            else:
+                guardian = (new_row, new_col)
+        
+        lab_map[i][j] = "."
+        
+print(possible_structure)
