@@ -38,4 +38,31 @@ test_sum = sum(valid)
 print(test_sum)
 
 
+# Part 2 introduces a new operator (||), this operator essentially concatenates 2 numbers together (2 || 3 = 23)
+# Include this operator along with multiplication and addition to see if we have a new sum
+
+valid_two = set()
+
+for test, operation in equation.items():
+    stack = [(operation[0], 0)]
+
+    while stack:
+        current_value, index = stack.pop()
+
+        if current_value > test:
+            continue
+        if index == len(operation) - 1:
+            if current_value == test:
+                valid_two.add(test)
+            continue
+
+        next_operation = operation[index + 1]
+
+        stack.append((current_value + next_operation, index + 1))
+        stack.append((current_value * next_operation, index + 1))
+        stack.append((int(str(current_value) + str(next_operation)), index + 1))
+
+
+second_test = sum(valid_two)
+print(second_test)
 
