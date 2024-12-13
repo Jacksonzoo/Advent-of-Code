@@ -22,6 +22,8 @@ for test, operation in equation.items():
     while stack:
         current_value, index = stack.pop()
 
+        if current_value > test:
+            continue
         if index == len(operation) - 1:
             if current_value == test:
                 valid.add(test)
