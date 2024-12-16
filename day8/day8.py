@@ -93,4 +93,5 @@ for char, location in character_positions.items():
                 antinode_p2.add((rr, cc))
                 rr -= dr
                 cc -= dc
+                
 print(len(antinode_p2))
