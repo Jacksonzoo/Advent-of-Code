@@ -64,3 +64,40 @@ topo_map = open_topo_map("input.txt")
 print(total_score(topo_map))
 
 
+# For part 2, we now need to find the total number of unique paths we can take starting 
+# at the trailhead of elevation 0, to reach the end at elevation 9
+
+def unique_path_score (grid, start):
+    directions = [
+    (-1, 0),        # moving up
+    (0, 1),         # moving right
+    (1, 0),         # moving down
+    (0, -1)         # moving left
+]
+    queue = [(start[0], start[1], 0)]
+    unique_score = 0
+
+    while queue:
+        x, y, elevation = queue.pop()
+        if elevation == 9:
+            unique_score += 1
+            continue
+
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if is_valid(nx, ny, grid):
+                next_elevation = grid[nx][ny]
+                if next_elevation == elevation + 1:
+                    queue.append((nx, ny, next_elevation))
+    return unique_score
+
+
+def total_unique_score(grid):
+    trailheads = find_trailheads(grid)
+    unique_total = 0
+    for start in trailheads:
+        unique_total += unique_path_score(grid, start)
+    return unique_total
+
+print(total_unique_score(topo_map))
+
