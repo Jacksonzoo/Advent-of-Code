@@ -49,9 +49,39 @@ def total_stones(arrangement):
     return total
 
 
-
 stone_arrangement = open_stone_line("input.txt")
 
 print(total_stones(stone_arrangement))
 
+
+# For part 2, find how many stones would we have after blinking 75 times
+
+def blinking_75_times(arrangement):
+    stone_count = {}
+
+    for stone in arrangement:
+        if stone in stone_count:
+            stone_count[stone] += 1
+        else:
+            stone_count[stone] = 1
+
+    for _ in range(75):
+        new_count = {}
+        for stone, count in stone_count.items():
+            if stone == 0:
+                new_count[1] = new_count.get(1, 0) + count
+            elif (len(str(stone)) % 2 == 0):
+                left, right = split_digit(stone)
+                new_count[left] = new_count.get(left, 0) + count
+                new_count[right] = new_count.get(right, 0) + count
+            else:
+                multiplied_stone = stone * 2024
+                new_count[multiplied_stone] = new_count.get(multiplied_stone, 0) + count
+        stone_count = new_count
+    return sum(stone_count.values())
+    
+def total_stone_75(arrangement):
+    return blinking_75_times(arrangement)
+
+print(total_stone_75(stone_arrangement))
 
