@@ -134,8 +134,8 @@ def calc_discounted_cost(garden):
                 visited |= region
     return total_cost
 
+
 garden_map_two = open_garden_map("input.txt")
 discounted_cost = calc_discounted_cost(garden_map_two)
 print(discounted_cost)
-
 
