@@ -43,12 +43,38 @@ def open_instructions(filename):
 # Each button should be pressed no more than 100 times to win a prize
 # Goal is to find the least amount of tokens used to win as many prizes as possible
 
+def check_math(a, b, button_ax, button_ay, button_bx, button_by, prize_x, prize_y):
+    return a * button_ax + b * button_bx == prize_x and a * button_ay + b * button_by == prize_y
 
 
+def play_machine(arcade):
+    total_tokens = 0
+    for machine in arcade:
+        
+        direction_a, direction_b, position_p = machine['Button A'], machine['Button B'], machine['Prize']
+        ax, ay = direction_a
+        bx, by = direction_b
+        px, py = position_p
+
+        token_cost = float('inf')
+        
+        for a in range(100):
+            for b in range(100):
+                if check_math(a, b, ax, ay, bx, by, px, py):
+                    token = a * 3 + b
+                    token_cost = min(token_cost, token)
+                    break
+                else:
+                    continue
+                break
+
+        if token_cost != float('inf'):
+            total_tokens += token_cost
+
+    return total_tokens
 
 
+arcade = open_instructions("input.txt")
+machine = play_machine(arcade)
+print(machine)
 
-
-
-
-print(open_instructions("testinput.txt"))
