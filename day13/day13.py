@@ -63,10 +63,6 @@ def play_machine(arcade):
                 if check_math(a, b, ax, ay, bx, by, px, py):
                     token = a * 3 + b
                     token_cost = min(token_cost, token)
-                    break
-                else:
-                    continue
-                break
 
         if token_cost != float('inf'):
             total_tokens += token_cost
@@ -74,7 +70,12 @@ def play_machine(arcade):
     return total_tokens
 
 
-arcade = open_instructions("input.txt")
+arcade = open_instructions("testinput.txt")
 machine = play_machine(arcade)
 print(machine)
+
+
+# Part 2
+
+
 
