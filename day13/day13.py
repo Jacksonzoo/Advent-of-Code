@@ -75,7 +75,69 @@ machine = play_machine(arcade)
 print(machine)
 
 
-# Part 2
+# Part 2, there is a unit conversion error that adds 10000000000000 to the x and y positions of every prize
+# Now it will take more than 100 press of each button to win prizes
+# Find the new lowest token cost to win the most amount of prizes
+
+def open_instructions_part2(filename):
+    arcade = []
+    with open(filename, "r") as file:
+        lines = [line.strip() for line in file if line.strip()]
+
+        button_a, button_b, prize = None, None, None
+
+        for line in lines:
+            if line.startswith("Button A"):
+                x = line.split()[2]
+                y = line.split()[3]
+                ax = int(x.split('+')[1].strip(','))
+                ay = int(y.split('+')[1])
+                button_a = (ax, ay)
+            elif line.startswith("Button B"):
+                x = line.split()[2]
+                y = line.split()[3]
+                bx = int(x.split('+')[1].strip(','))
+                by = int(y.split('+')[1])
+                button_b = (bx, by)
+            elif line.startswith("Prize"):
+                x_prize = (int(line.split()[1].split('=')[1].strip(',')) + 10000000000000)
+                y_prize = (int(line.split()[2].split('=')[1]) + 10000000000000)
+                prize = (x_prize, y_prize)
+
+                if button_a and button_b and prize:
+                    arcade.append({
+                        'Button A': button_a,
+                        'Button B': button_b,
+                        'Prize': prize
+                    })
+
+                    button_a, button_b, prize = None, None, None
+    return arcade
 
 
+def play_faulty_machine(arcade):
+    total_tokens = 0
+    for machine in arcade:
+        
+        direction_a, direction_b, position_p = machine['Button A'], machine['Button B'], machine['Prize']
+        ax, ay = direction_a
+        bx, by = direction_b
+        px, py = position_p
+        
+        denominator = ay * bx - ax * by
+        if denominator == 0:
+            continue
 
+        a = (py * bx - px * by) // (ay * bx - ax * by)
+        b = (px - a * ax) // bx
+        
+        if check_math(a, b, ax, ay, bx, by, px, py) and a > 0 and b > 0:
+            tokens = a * 3 + b
+            total_tokens += tokens
+
+    return total_tokens
+
+
+arcade_error = open_instructions_part2("input.txt")
+error_machine = play_faulty_machine(arcade_error)
+print(error_machine)
