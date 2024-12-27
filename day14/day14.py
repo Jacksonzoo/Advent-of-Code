@@ -80,4 +80,38 @@ safety_score = calculate_safety_score(final_position, grid_size)
 print(safety_score)
 
 
+# Part 2 apparently the robots arrange themselves to look like a christmas tree 
+# after a certain amount of seconds. The goal is to find how many seconds that is
+# Assuming that for a grid this big you would need all the robots to form a decent tree
+# Each robot should not be overlapping
 
+def robot_movement(robot, grid_size, seconds):
+    width, height = grid_size
+    final_position = {}
+
+    for robots in robot:
+        px, py = robots['p']
+        vx, vy = robots['v']
+
+        nx = (px + vx * seconds) % width
+        ny = (py + vy * seconds) % height
+        final_position[(nx, ny)] = final_position.get((nx, ny), 0) + 1
+    
+    return final_position
+
+def check_overlap(robot, grid_size):
+    seconds = 0
+
+    while True:
+        seconds += 1
+        final_position = robot_movement(robot, grid_size, seconds)
+
+        if all(count == 1 for count in final_position.values()):
+            return seconds, final_position
+        
+
+robot_part_two, testing = open_instructions("input.txt")
+grid_size_two = choose_grid(testing)
+seconds, final_position = check_overlap(robot_part_two, grid_size_two)
+
+print(seconds)
