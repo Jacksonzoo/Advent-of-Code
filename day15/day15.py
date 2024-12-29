@@ -71,7 +71,6 @@ def move_robot_draft(warehouse_map, move_instruction):
     finished_map = warehouse_map
     return finished_map
 
-
 def move_robot(warehouse_map, move_instruction):
     robot_x, robot_y = locate_robot(warehouse_map)
     directions = movement()
@@ -117,3 +116,11 @@ robot_movement = move_robot(warehouse_map, move_instruction)
 gps_sum = calculate_gps_sum(robot_movement)
 
 print(gps_sum)
+
+
+# Part 2 the warehouse map has doubled
+# For every '#', there is a '##'; for every 'O' there is a '[]'; for every '.' there is '..'; for every '@' there is '@.'
+# Now the goal is to find new gps sum for each box position using the ']' edge when calculating distance from left wall.
+# If box(a) is pushing in between ('c][d') box(c) and box(d) robot a can push box(a) moving box(c) and box(d) along with it.
+# Say if we got a 4 stack pyramid where robot was pushing box 1a. if box 4d were to hit a wall, the entire structure stops.
+
