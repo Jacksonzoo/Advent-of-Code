@@ -124,3 +124,38 @@ print(gps_sum)
 # If box(a) is pushing in between ('c][d') box(c) and box(d) robot a can push box(a) moving box(c) and box(d) along with it.
 # Say if we got a 4 stack pyramid where robot was pushing box 1a. if box 4d were to hit a wall, the entire structure stops.
 
+def open_bigger_map(filename):
+    with open(filename, "r") as file:
+        content = file.read()
+        section_one, section_two = content.split('\n\n')
+        warehouse_map = [list(line) for line in section_one.split()]
+        move_instruction = list("".join(section_two.split()))
+
+        bigger_warehouse = []
+
+        for i in range(len(warehouse_map)):
+            bigger_warehouse_row = []
+            for j in range(len(warehouse_map[0])):
+                current_value = warehouse_map[i][j]
+                if current_value == '#':
+                    bigger_warehouse_row.append('#')
+                    bigger_warehouse_row.append('#')
+                elif current_value == '.':
+                    bigger_warehouse_row.append('.')
+                    bigger_warehouse_row.append('.')
+                elif current_value == 'O':
+                    bigger_warehouse_row.append('[')
+                    bigger_warehouse_row.append(']')
+                elif current_value == '@':
+                    bigger_warehouse_row.append('@')
+                    bigger_warehouse_row.append('.')
+            bigger_warehouse.append(bigger_warehouse_row)
+
+    return bigger_warehouse, move_instruction
+
+
+
+
+bigger_warehouse, move_direction = open_bigger_map("testinput.txt")
+
+print(bigger_warehouse)
