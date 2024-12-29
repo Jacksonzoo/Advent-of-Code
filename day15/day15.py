@@ -14,35 +14,32 @@ def open_map_instructions(filename):
 # Robot (@) can push boxes (O) as long as the other side is not a wall (#)
 # After the robot moves in order of the sequence in directional instructions, calculate the sum of all box gps coordinate locations
 
-def movement(move_instruction):
+def movement():
     return {
         '^': (-1, 0),
         '>': (0, 1),
         'v': (1, 0),
-        '<': (-1, 0)
+        '<': (0, -1)
     }
 
 def locate_robot(warehouse_map):
     for i in range(len(warehouse_map)):
         for j in range(len(warehouse_map[0])):
-            if warehouse_map[i][j] != '@':
-                continue
-            else:
-                robot = (i, j)
-    return robot
+            if warehouse_map[i][j] == '@':
+                return (i, j)
 
-def next_position(nx, ny, warehouse_map):
-    for i in range(len(warehouse_map)):
-        for j in range(len(warehouse_map[0])):
-            return warehouse_map[nx][ny]
+def within_warehouse(nx, ny, warehouse_map):
+    return 0 <= nx < len(warehouse_map) and 0 <= ny < len(warehouse_map[0])
 
-
-def move_robot(warehouse_map, move_instruction):
+def move_robot_draft(warehouse_map, move_instruction):
     robot = locate_robot(warehouse_map)
     row = len(warehouse_map)
     col = len(warehouse_map[0])
     directions = movement(move_instruction)
 
+    def next_position(nx, ny, warehouse_map):
+            return warehouse_map[nx][ny]
+    
     for i in range(row):
         for j in range(col):
             if (i, j) == robot:
@@ -66,32 +63,57 @@ def move_robot(warehouse_map, move_instruction):
                                         break
                                 original_x, original_y = sequence[0]
                                 new_start_x, new_start_y = sequence[1]
-                                end_x, end_y = sequence[-1]
+                                if len(sequence) > 2:
+                                    end_x, end_y = sequence[-1]
+                                    warehouse_map[end_x][end_y] = 'O'
                                 warehouse_map[new_start_x][new_start_y] = warehouse_map[original_x][original_y]
                                 warehouse_map[original_x][original_y] = '.'
-                                warehouse_map[end_x][end_y] = 'O'
     finished_map = warehouse_map
     return finished_map
 
-def calculate_gps_sum(finished_map):
+
+def move_robot(warehouse_map, move_instruction):
+    robot_x, robot_y = locate_robot(warehouse_map)
+    directions = movement()
+
+    for move in move_instruction:
+        dx, dy = directions[move]
+        nx, ny = robot_x + dx, robot_y  + dy
+
+        if not within_warehouse(nx, ny, warehouse_map):
+            continue
+
+        next_movement = warehouse_map[nx][ny]
+
+        if next_movement == '.':
+            warehouse_map[robot_x][robot_y] = "."
+            warehouse_map[nx][ny] = '@'
+            robot_x, robot_y = nx, ny
+        elif warehouse_map[nx][ny] == 'O':
+            look_ahead_x, look_ahead_y = nx + dx, ny + dy
+            while within_warehouse(look_ahead_x, look_ahead_y, warehouse_map) and warehouse_map[look_ahead_x][look_ahead_y] == 'O':
+                look_ahead_x += dx
+                look_ahead_y += dy
+            if within_warehouse(look_ahead_x, look_ahead_y, warehouse_map):
+                if warehouse_map[look_ahead_x][look_ahead_y] == '.':
+                    warehouse_map[look_ahead_x][look_ahead_y] = 'O'
+                    warehouse_map[nx][ny] = '@'
+                    warehouse_map[robot_x][robot_y] = '.'
+                    robot_x, robot_y = nx, ny
+
+    return warehouse_map
+
+def calculate_gps_sum(warehouse_map):
     gps_coordinate_sum = 0
-    for i in range(len(finished_map)):
-        for j in range(len(finished_map[0])):
-            if finished_map != 'O':
-                continue
-            else:
-                height_distance = abs(0 - i)
-                left_distance = abs(0 - j)
-                gps_coordinate = 100 * (height_distance + left_distance)
-                gps_coordinate_sum += gps_coordinate
+    for i in range(len(warehouse_map)):
+        for j in range(len(warehouse_map[0])):
+            if warehouse_map[i][j] == 'O':
+                gps_coordinate_sum += 100 * i + j
 
     return gps_coordinate_sum
 
-
-
-warehouse_map, move_instruction = open_map_instructions("testinput.txt")
+warehouse_map, move_instruction = open_map_instructions("input.txt")
 robot_movement = move_robot(warehouse_map, move_instruction)
 gps_sum = calculate_gps_sum(robot_movement)
 
 print(gps_sum)
-
