@@ -154,8 +154,80 @@ def open_bigger_map(filename):
     return bigger_warehouse, move_instruction
 
 
+def move_robot_new(bigger_warehouse, move_instruction):
+    robot_x, robot_y = locate_robot(bigger_warehouse)
+    directions = movement()
+
+    for move in move_instruction:
+        dx, dy = directions[move]
+        nx, ny = robot_x + dx, robot_y  + dy
+
+        if not within_warehouse(nx, ny, bigger_warehouse):
+            continue
+
+        next_movement = bigger_warehouse[nx][ny]
+
+        if next_movement == '.':
+            bigger_warehouse[robot_x][robot_y] = "."
+            bigger_warehouse[nx][ny] = '@'
+            robot_x, robot_y = nx, ny
+        elif bigger_warehouse[nx][ny] == '[' or ']':
+            if move == '<' or '>':
+                look_ahead_x, look_ahead_y = nx + dx + dx, ny + dy + dy
+            else:
+                look_ahead_x, look_ahead_y = nx + dx, ny + dy
+            while within_warehouse(look_ahead_x, look_ahead_y, bigger_warehouse) and bigger_warehouse[look_ahead_x][look_ahead_y] == '[' or ']':
+                if move == '<' or '>':
+                    look_ahead_x += dx + dx
+                    look_ahead_y += dy + dy
+                else:
+                    look_ahead_x += dx
+                    look_ahead_y += dy
+            if within_warehouse(look_ahead_x, look_ahead_y, bigger_warehouse):
+                if bigger_warehouse[look_ahead_x][look_ahead_y] == '.':
+                    bigger_warehouse[robot_x][robot_y] = '.'
+                    bigger_warehouse[nx][ny] = '@'
+                    if move == '<' or '>':
+                        for x in (nx, look_ahead_x + 1):
+                            for y in (ny, look_ahead_y + 1):
+                                bigger_warehouse[x][y] = '[' if (x + y) % 2 == 0 else ']'
+                    else:
+                        visited = set()
+                        visited.add(nx, ny)
+                        for temp_x, temp_y in directions:
+                            new_x, new_y = temp_x + nx, temp_y + ny
+                            while set:
+                                if bigger_warehouse[new_x][new_y] == '[' or ']':
+                                    visited.add(new_x, new_y)
+                                else:
+                                    break
+                        for position in reversed(visited):
+                            pos_x, pos_y = position
+                            next_pox, next_poy = pos_x + dx, pos_y + dy
+                            bigger_warehouse[next_pox][next_poy] = bigger_warehouse[pos_x][pos_y]
+                            if bigger_warehouse[pos_x][pos_y] != '[' or ']':
+                                bigger_warehouse[pos_x][pos_y] = '.'
+
+                    robot_x, robot_y = nx, ny
+
+    return bigger_warehouse
+
+
+def calc_new_gps_sum(bigger_warehouse):
+    gps_sum = 0
+    for i in range(len(bigger_warehouse)):
+        for j in range(len(bigger_warehouse[0])):
+            if bigger_warehouse[i][j] == ']':
+                height_dist = i
+                left_dist = j - 1
+                gps_coordinate = 100 * height_dist + left_dist
+                gps_sum += gps_coordinate
+
+    return gps_sum
 
 
 bigger_warehouse, move_direction = open_bigger_map("testinput.txt")
+new_robot_movement = move_robot_new(bigger_warehouse, move_instruction)
+gps_sum = calc_new_gps_sum(new_robot_movement)
 
-print(bigger_warehouse)
+print(gps_sum)
