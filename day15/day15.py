@@ -158,6 +158,12 @@ def open_bigger_map(filename):
 def is_box(value):
     return value in ['[',']']
 
+def get_box_width():
+    return 2
+
+def is_box_start(char):
+    return char == '['
+
 def is_empty(value):
     return value == '.'
 
@@ -167,7 +173,44 @@ def new_box_positions(bigger_warehouse, visited_positions, dx, dy):
         bigger_warehouse[nx][ny] = bigger_warehouse[x][y]
         bigger_warehouse[x][y] = '.'
 
-def move_robot_new(bigger_warehouse, move_instruction):
+def locate_box_group(warehouse_map, robot_x, robot_y, dx, dy):
+    if warehouse_map[robot_x][robot_y] not in ['#', '.']:
+        group = [(robot_x, robot_y)]
+        warehouse_map[robot_x][robot_y] = '.'
+        
+        if within_warehouse(robot_x + dx, robot_y + dy, warehouse_map):
+            group.extend(locate_box_group(warehouse_map, robot_x + dx, robot_y + dy, dx, dy))
+        
+        if within_warehouse(robot_x, robot_y + 1, warehouse_map) and warehouse_map[robot_x][robot_y + 1] == ']':
+            group.extend(locate_box_group(warehouse_map, robot_x, robot_y + 1, dx, dy))
+        
+        if within_warehouse(robot_x, robot_y - 1, warehouse_map) and warehouse_map[robot_x][robot_y - 1] == '[':
+            group.extend(locate_box_group(warehouse_map, robot_x, robot_y - 1, dx, dy))
+            
+        return group
+    return []
+
+def move_robot_new(warehouse_map, move_instruction):
+    robot_x, robot_y = locate_robot(warehouse_map)
+    directions = movement()
+
+    for move in move_instruction:
+        dx, dy = directions[move]
+        boxes = locate_box_group(warehouse_map.copy(), robot_x, robot_y, dx, dy)
+        
+        if boxes and all(within_warehouse(x + dx, y + dy, warehouse_map) and 
+                        warehouse_map[x + dx][y + dy] == '.' for x, y in boxes):
+            for x, y in boxes:
+                warehouse_map[x + dx][y + dy] = warehouse_map[x][y]
+                warehouse_map[x][y] = '.'
+            robot_x += dx
+            robot_y += dy
+
+    return warehouse_map
+
+
+
+def move_robot_working(bigger_warehouse, move_instruction):
     robot_x, robot_y = locate_robot(bigger_warehouse)
     directions = movement()
 
@@ -266,11 +309,11 @@ def robot_part2_draft(bigger_warehouse, move_instruction):
 def calc_new_gps_sum(bigger_warehouse):
     gps_sum = 0
     for i in range(len(bigger_warehouse)):
-        for j in range(len(bigger_warehouse[0])):
-            if bigger_warehouse[i][j] == '[':
+        for j in range(len(bigger_warehouse[0])-1):
+            if bigger_warehouse[i][j] == '[' and bigger_warehouse[i][j+1] == ']':
                 gps_coordinate = 100 * i + j
                 gps_sum += gps_coordinate
-
+                
     return gps_sum
 
 
@@ -278,4 +321,71 @@ bigger_warehouse, move_direction = open_bigger_map("testinput.txt")
 new_robot_movement = move_robot_new(bigger_warehouse, move_instruction)
 gps_sum = calc_new_gps_sum(new_robot_movement)
 
+
 print(gps_sum)
+
+
+
+# Part (unfinished):
+
+def extract_component(map, r, c, dr, dc):
+    """
+    Recursively extract connected components of the map (e.g., wide boxes, robot).
+    """
+    if map[r][c] in ['#', '.']:
+        return []
+    ch = map[r][c]
+    map[r][c] = '.'  # Mark as visited
+    component = [(r, c, ch)]
+    component.extend(extract_component(map, r + dr, c + dc, dr, dc))
+    if ch == '[':
+        component.extend(extract_component(map, r, c + 1, dr, dc))
+    if ch == ']':
+        component.extend(extract_component(map, r, c - 1, dr, dc))
+    return component
+
+def solve(map, moves):
+    """
+    Simulate the robot's movements and calculate the GPS sum of all boxes.
+    """
+    robot_r, robot_c = next((r, row.index('@')) for r, row in enumerate(map) if '@' in row)
+    for move in moves:
+        dr, dc = {'v': (1, 0), '^': (-1, 0), '>': (0, 1), '<': (0, -1)}[move]
+        component = extract_component(map, robot_r, robot_c, dr, dc)
+        if all(map[r + dr][c + dc] == '.' for r, c, _ in component):
+            component = [(r + dr, c + dc, ch) for r, c, ch in component]
+            robot_r, robot_c = robot_r + dr, robot_c + dc
+        for rr, cc, ch in component:
+            map[rr][cc] = ch
+    return sum(r * 100 + c for r, row in enumerate(map) for c, ch in enumerate(row) if ch in ['O', '['])
+
+def double(ch):
+    """
+    Scale characters for Part 2.
+    """
+    if ch == '@':
+        return ['@', '.']
+    elif ch == '.':
+        return ['.', '.']
+    elif ch == '#':
+        return ['#', '#']
+    elif ch == 'O':
+        return ['[', ']']
+    else:
+        raise Exception("Unexpected char " + ch)
+
+# ---------------- MAIN DRIVER ------------------
+if __name__ == "__main__":
+    # Replace 'testinput.txt' with the actual file path
+    with open("testinput.txt", "r") as file:
+        content = file.read()
+        map_data, move_data = content.split("\n\n")
+
+    map1 = [list(row) for row in map_data.split('\n')]
+    moves = list(move_data.replace('\n', ''))
+
+    # Part 2: Scale the map and solve
+    map2 = [sum((double(ch) for ch in row), []) for row in map_data.split('\n')]
+
+    part2_gps_sum = solve(map2, moves)
+    print(f"Part Unfinished GPS Sum: {part2_gps_sum}")
