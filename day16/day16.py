@@ -75,77 +75,48 @@ print(lowest_score)
 # Part 2 we need to find how many non-wall tiles (S, ., E) are one of the 'best' paths to take. 
 # How many tiles are in at least one of the best possible paths to take
 
-def find_best_tiles(maze, start, end):
-    directions = [
-        (-1, 0),  # up (north)
-        (0, 1),   # right (east)
-        (1, 0),   # down (south)
-        (0, -1)   # left (west)
-    ]
-    
-    queue = [(0, start[0], start[1], 1)] 
-    forward_scores = {} 
-    
-    while queue:
-        queue.sort()
-        score, x, y, current_dir = queue.pop(0)
-        
-        state = (x, y, current_dir)
-        if state in forward_scores and forward_scores[state] <= score:
-            continue
-        forward_scores[state] = score
-        
-        for i, (dx, dy) in enumerate(directions):
-            nx, ny = x + dx, y + dy
-            if is_valid(nx, ny, maze):
-                new_score = score + (1 if i == current_dir else 1001)
-                queue.append((new_score, nx, ny, i))
-    
-    optimal_score = float('inf')
-    end_directions = []
-    for dir_idx in range(4):
-        state = (end[0], end[1], dir_idx)
-        if state in forward_scores:
-            if forward_scores[state] < optimal_score:
-                optimal_score = forward_scores[state]
-                end_directions = [dir_idx]
-            elif forward_scores[state] == optimal_score:
-                end_directions.append(dir_idx)
-    
-    best_tiles = {start, end} 
-    queue = [(optimal_score, end[0], end[1], d) for d in end_directions]
-    backward_visited = set()
-    
-    while queue:
-        queue.sort(reverse=True)
-        target_score, x, y, current_dir = queue.pop()
-        
-        state = (x, y, current_dir)
-        if state in backward_visited:
-            continue
-        backward_visited.add(state)
-        
-        for prev_dir, (dx, dy) in enumerate(directions):
-            px, py = x - dx, y - dy
-            if is_valid(px, py, maze):
-                move_cost = 1 if prev_dir == current_dir else 1001
-                prev_score = target_score - move_cost
-                prev_state = (px, py, prev_dir)
-                
-                if prev_state in forward_scores and forward_scores[prev_state] == prev_score:
-                    best_tiles.add((px, py))
-                    queue.append((prev_score, px, py, prev_dir))
-    
-    return best_tiles
+from sys import argv
+from heapq import heappop, heappush
+from math import inf
 
-def count_best_tiles(maze):
-    start = find_tile('start', maze)
-    end = find_tile('end', maze)
-    best_tiles = find_best_tiles(maze, start, end)
-    
-    return len(best_tiles)
+with open(argv[1]) as f:
+    lines = [l.strip() for l in f]
 
-reindeer_maze_part2 = open_maze("testinput.txt")
-tile_count = count_best_tiles(reindeer_maze)
-print(tile_count)
+dimx, dimy = (len(lines[0]), len(lines))
+maze = list("".join(lines))
+start, end = (maze.index("S"), maze.index("E"))
+dirs = [-dimx, 1, dimx, -1]
 
+visited = dict()
+q = list()
+highscore = inf
+paths = list()
+
+heappush(q, (0, start, 1, ""))
+while q:
+    score, pos, d, path = heappop(q)
+    if score > highscore:
+        break
+    if (pos, d) in visited and visited[(pos, d)] < score:
+        continue
+    visited[(pos, d)] = score
+    if pos == end:
+        highscore = score
+        paths.append(path)
+    if maze[pos+dirs[d]] != "#":
+        heappush(q, (score+1, pos+dirs[d], d, path+"F"))
+    heappush(q, (score+1000, pos, (d+1)%4, path+"R"))
+    heappush(q, (score+1000, pos, (d-1)%4, path+"L"))
+
+tiles = set()
+tiles.add(start)
+for p in paths:
+    t, d = (start, 1)
+    for c in p:
+        if c=="L": d=(d-1)%4
+        elif c=="R": d=(d+1)%4
+        elif c=="F":
+            t+=dirs[d]
+            tiles.add(t)
+print(f"Shortest path: {highscore}")
+print(f"Optimal viewing positions: {len(tiles)}")
