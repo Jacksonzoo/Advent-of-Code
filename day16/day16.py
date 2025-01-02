@@ -21,55 +21,55 @@ def find_tile(tile, maze):
             
 
 def is_valid(x, y, maze):
-    return 0 <= x < len(maze) and 0 <= y < len(maze[0])
+    return 0 <= x < len(maze) and 0 <= y < len(maze[0]) and maze[x][y] != '#'
 
 
-def navigate_maze(maze):
-    start_x, start_y = find_tile('start', maze)
-    
-    direction = {
+def navigate_maze(maze, start, end):
+    direction = [
         (-1, 0),        # move up
         (0, 1),         # move left
         (1, 0),         # move down
         (0, -1)         # move right
-    }
+    ]
 
-    queue = [(start_x, start_y)]
+    queue = [(0, start[0], start[1], 1)]
     visited = set()
-    visited.add((start_x, start_y))
-    score = 0
 
     while queue:
-        x, y = queue.pop(0)
-        if (x, y) in visited:
+        queue.sort()
+        score, x, y, current_dir = queue.pop(0)
+        if (x, y) == end:
+            return score
+        if (x, y, current_dir) in visited:
             continue
+        visited.add((x, y, current_dir))
 
-        for dx, dy in direction:
+        for i, (dx, dy) in enumerate(direction):
             nx, ny = dx + x, dy + y
 
-            if is_valid(nx, ny, maze) and maze[nx][ny] != '#':
-                next_movement = (nx, ny)
-
-                if (nx, ny) == (start_x + 1, start_y):
-                    score += 1
-                if next_movement not in visited:
-                    visited.add((nx, ny))
-                    queue.append((nx, ny))
+            if is_valid(nx, ny, maze):
+                if i == current_dir:
+                    new_score = score + 1
+                else:
+                    new_score = score + 1000 + 1
                 
-                
+                queue.append((new_score, nx, ny, i))
 
-                    
+    return float('inf')
 
-                
-            
+def find_lowest_score(maze):
+    start = find_tile('start', maze)
+    end = find_tile('end', maze)
 
-
-
-
-
+    return navigate_maze(maze, start, end)
 
 
 
-reindeer_maze = open_maze("testinput.txt")
+reindeer_maze = open_maze("input.txt")
+lowest_score = find_lowest_score(reindeer_maze)
 
-print(reindeer_maze)
+print(lowest_score)
+
+
+
+
